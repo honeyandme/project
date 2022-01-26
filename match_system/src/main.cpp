@@ -28,7 +28,7 @@ struct Massage_queue{
     queue<Task> q;
     mutex m;
     condition_variable cv;
-}massage_queue;
+}message_queue;
 
 class Pool{
     public:
@@ -42,7 +42,7 @@ class Pool{
                User a = users[0],b = users[1];
                users.erase(users.begin());
                users.erase(users.begin());
-               sava_result(a.id,b.id);
+               save_result(a.id,b.id);
             }
         }
         void add(User user)
@@ -51,7 +51,7 @@ class Pool{
         }
         void remove(User user)
         {
-            for(uint32_t i = 0;i<user.size();i++)
+            for(uint32_t i = 0;i<users.size();i++)
                 if(users[i].id==user.id)
                 {
                     users.erase(users.begin()+i);
@@ -72,7 +72,7 @@ class MatchHandler : virtual public MatchIf {
             // Your implementation goes here
             printf("add_user\n");
             unique_lock<mutex> lck(message_queue.m);
-            massage_queue.q.push({user,"add"});
+            message_queue.q.push({user,"add"});
             message_queue.cv.notify_all();
             return 0;
         }
@@ -82,7 +82,7 @@ class MatchHandler : virtual public MatchIf {
             printf("remove_user\n");
 
             unique_lock<mutex> lck(message_queue.m);
-            massage_queue.q.push({user,"remove"});
+            message_queue.q.push({user,"remove"});
             return 0;
         }
 
@@ -93,14 +93,14 @@ void comsume_task(){
     {
 
         unique_lock<mutex> lck(message_queue.m);
-        if(massage_queue.q.empty())
+        if(message_queue.q.empty())
         {
             message_queue.cv.wait(lck);
         }
         else
         {
             auto task = message_queue.q.front();
-            message.queue.q.pop();
+            message_queue.q.pop();
 
             lck.unlock();
 
